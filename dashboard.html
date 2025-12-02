@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard | Subscriptions List</title>
+    <link rel="stylesheet" href="style.css"> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    </head>
+<body class="font-sans gradient-bg text-text-light min-h-screen">
+
+    <header class="main-header">
+        <div class="container header-content">
+            <h1 class="logo">let's go <span class="logo-white">gym</span></h1>
+      
+        </div>
+    </header>
+
+    <main class="container main-content">
+        <div class="dashboard-container">
+            
+            <div class="status-header">
+                <h2 class="text-3xl font-extrabold text-accent-yellow">
+                    Membership Lookup
+                </h2>
+                <p class="text-gray-400 mt-2">Enter the unique subscription code to check status.</p>
+            </div>
+
+            <div class="search-area">
+                <input type="text" id="search-code-input" placeholder="Enter Subscription Code (e.g., 87654321)" oninput="searchByCode()">
+                
+                <div id="search-result-container" class="hidden">
+                    <h3 class="text-accent-yellow">Found Member: <span id="member-name-lookup" class="text-text-light"></span></h3>
+                    
+                    <div id="search-result-details" class="mt-4">
+                        <p>Code: <strong id="member-code-lookup"></strong></p>
+                        <p>Plan: <strong id="member-plan-lookup"></strong></p>
+                        <p>Days Remaining: <strong id="member-days-left-lookup"></strong></p>
+                        <p class="mt-2">Membership Status: 
+                            <span id="member-status-lookup"></span>
+                        </p>
+                    </div>
+                    
+                    <div class="text-center mt-6">
+                        <button id="lookup-toggle-btn" class="toggle-btn" onclick="togglePaymentStatus()"></button>
+                    </div>
+                </div>
+
+                <p id="search-error" class="hidden text-danger mt-4">Code not found or invalid format.</p>
+            </div>
+            
+            <hr class="border-gray-700 my-8">
+
+            <div class="list-header">
+                <h2 class="text-3xl font-extrabold text-accent-yellow">
+                    All Subscriptions List
+                </h2>
+                <button id="clear-data-btn" class="clear-btn">Clear All Data</button>
+            </div>
+            
+            <div id="table-container" class="table-wrapper">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Plan</th>
+                            <th>Days Left</th>
+                            <th>Paid Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscriptions-table-body">
+                        </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+    
+    <footer class="main-footer">
+        <div class="container footer-content">
+            <p>&copy; 2026 let's go gym. data stored locally.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- GLOBAL STATE FOR LOOKUP ---
+        let currentLookupIndex = -1;
+
+        // --- CORE UTILITY FUNCTIONS ---
+        function getSubscriptions() {
+            return JSON.parse(localStorage.getItem('gymSubscriptions')) || [];
+        }
+
+        function saveSubscriptions(subscriptions) {
+            localStorage.setItem('gymSubscriptions', JSON.stringify(subscriptions));
+        }
+        
+        function calculateStatus(sub) {
+            const ONE_DAY = 1000 * 60 * 60 * 24;
+            const startDate = new Date(sub.startDate || Date.now()); 
+            const duration = sub.duration;
+            const currentDate = new Date();
+            
+            const elapsedDays = Math.floor((currentDate - startDate) / ONE_DAY);
+            const daysLeft = duration - elapsedDays;
+            
+            let statusText;
+            let statusClass;
+            
+            if (!sub.isPaid) {
+                statusText = "UNPAID";
+                statusClass = "status-unpaid";
+            } else if (daysLeft > 0) {
+                statusText = "ACTIVE";
+                statusClass = "status-active";
+            } else {
+                statusText = "EXPIRED";
+                statusClass = "status-expired";
+            }
+
+            return { daysLeft: Math.max(0, daysLeft), statusText, statusClass, isExpired: daysLeft <= 0 };
+        }
+
+        // --- SEARCH LOGIC (Only searches for 8-digit numerical codes) ---
+        function searchByCode() {
+            const searchCode = document.getElementById('search-code-input').value.trim();
+            const resultContainer = document.getElementById('search-result-container');
+            const errorElement = document.getElementById('search-error');
+            const subscriptions = getSubscriptions();
+
+            resultContainer.classList.add('hidden');
+            errorElement.classList.add('hidden');
+            currentLookupIndex = -1;
+
+            // Only proceed if the input is exactly 8 characters (matching the generated code length)
+            if (searchCode.length !== 8 || isNaN(searchCode)) {
+                if (searchCode.length >= 8) {
+                    errorElement.textContent = `Code must be an 8-digit number.`;
+                    errorElement.classList.remove('hidden');
+                }
+                return; 
+            }
+
+            const index = subscriptions.findIndex(sub => sub.code === searchCode);
+
+            if (index > -1) {
+                const sub = subscriptions[index];
+                currentLookupIndex = index;
+                displayLookupResult(sub, index);
+            } else {
+                errorElement.textContent = `Code "${searchCode}" not found.`;
+                errorElement.classList.remove('hidden');
+            }
+        }
+        
+        function displayLookupResult(sub, index) {
+            const status = calculateStatus(sub);
+            const resultContainer = document.getElementById('search-result-container');
+            const toggleBtn = document.getElementById('lookup-toggle-btn');
+            
+            document.getElementById('member-name-lookup').textContent = sub.name;
+            document.getElementById('member-code-lookup').textContent = sub.code;
+            document.getElementById('member-plan-lookup').textContent = sub.plan;
+            document.getElementById('member-days-left-lookup').textContent = `${status.daysLeft} days`;
+
+            const statusElement = document.getElementById('member-status-lookup');
+            statusElement.textContent = status.statusText;
+            statusElement.className = ''; 
+            statusElement.classList.add(status.statusClass);
+
+            if (sub.isPaid) {
+                toggleBtn.textContent = 'Mark as UNPAID';
+                toggleBtn.className = 'toggle-btn btn-unpay';
+            } else {
+                toggleBtn.textContent = 'Mark as PAID (Activate)';
+                toggleBtn.className = 'toggle-btn btn-pay';
+            }
+
+            resultContainer.classList.remove('hidden');
+        }
+
+
+        // --- TOGGLE LOGIC (Unified) ---
+        function togglePaymentStatus(indexToToggle) {
+            const index = (indexToToggle !== undefined) ? indexToToggle : currentLookupIndex;
+
+            if (index === -1 || index >= getSubscriptions().length) return;
+
+            const subscriptions = getSubscriptions();
+            const sub = subscriptions[index];
+            
+            sub.isPaid = !sub.isPaid;
+            
+            if (sub.isPaid && sub.daysLeft <= 0) {
+                 sub.startDate = Date.now();
+            }
+            
+            saveSubscriptions(subscriptions);
+            loadTable(); 
+            
+            if (index === currentLookupIndex) {
+                 displayLookupResult(sub, index);
+            }
+        }
+
+        // --- FULL LIST (TABLE) LOGIC ---
+        function loadTable() {
+            const storedSubscriptions = getSubscriptions();
+            const subscriptions = [...storedSubscriptions].reverse(); 
+            const tableBody = document.getElementById('subscriptions-table-body');
+            
+            tableBody.innerHTML = ''; 
+            
+            if (subscriptions.length === 0) {
+                document.getElementById('table-container').innerHTML = '<div class="empty-state">No subscriptions recorded yet.</div>';
+                document.getElementById('clear-data-btn').style.display = 'none';
+                return;
+            }
+
+            subscriptions.forEach((sub, reverseIndex) => {
+                const row = tableBody.insertRow();
+                const status = calculateStatus(sub);
+                
+                const originalIndex = storedSubscriptions.length - 1 - reverseIndex; 
+
+                row.insertCell().textContent = sub.name;
+                row.insertCell().textContent = sub.code;
+                row.insertCell().textContent = sub.plan;
+                row.insertCell().textContent = `${status.daysLeft} days`;
+
+                let paidCell = row.insertCell();
+                paidCell.textContent = sub.isPaid ? 'YES' : 'NO';
+                paidCell.style.color = sub.isPaid ? 'var(--success)' : 'var(--danger)';
+
+                row.insertCell().textContent = sub.date;
+                
+                let actionCell = row.insertCell();
+                const toggleBtn = document.createElement('button');
+                toggleBtn.textContent = sub.isPaid ? 'Mark Unpaid' : 'Mark Paid';
+                toggleBtn.className = sub.isPaid ? 'toggle-btn btn-unpay' : 'toggle-btn btn-pay';
+                toggleBtn.style.fontSize = '0.75rem'; 
+                
+                toggleBtn.onclick = function() {
+                    togglePaymentStatus(originalIndex); 
+                };
+                actionCell.appendChild(toggleBtn);
+            });
+            document.getElementById('clear-data-btn').style.display = 'block';
+        }
+
+        function clearSubscriptions() {
+            if (confirm("Are you sure you want to clear ALL subscription data? This cannot be undone.")) {
+                localStorage.removeItem('gymSubscriptions');
+                localStorage.removeItem('currentSubscriptionCode'); 
+                loadTable(); 
+            }
+        }
+        
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTable();
+            document.getElementById('clear-data-btn').addEventListener('click', clearSubscriptions);
+        });
+    </script>
+</body>
+</html>

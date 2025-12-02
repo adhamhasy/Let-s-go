@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Status</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    </head>
+<body class="gradient-bg text-text-light min-h-screen">
+
+    <header class="main-header">
+        <div class="container header-content">
+            <h1 class="logo">let's go <span class="logo-white">gym</span></h1>
+            
+            <a href="index.html#pricing" class="join-link-mobile">join</a>
+        </div>
+    </header>
+
+    <main class="container main-content text-center">
+
+        <section id="subscription-status" class="hidden p-6 md:p-12 rounded-3xl bg-primary-dark shadow-2xl border border-gray-800 max-w-2xl mx-auto my-16">
+            <h2 class="text-5xl font-extrabold mb-4 text-accent-yellow">
+                Your Membership Status
+            </h2>
+            <p class="text-xl text-gray-400 mb-8">
+                Welcome back, <span id="display-name" class="font-bold text-white"></span>!
+            </p>
+
+            <div class="text-left space-y-4 bg-gray-900 p-6 rounded-xl mb-8">
+                <p class="text-gray-300 border-b border-gray-700 pb-2">
+                    <strong class="text-accent-yellow">Subscription Plan:</strong> <span id="display-plan" class="float-right text-white"></span>
+                </p>
+                <p class="text-gray-300 border-b border-gray-700 pb-2">
+                    <strong class="text-accent-yellow">Access Code:</strong> <span id="display-code" class="float-right text-white font-mono text-xl"></span>
+                </p>
+                <p class="text-gray-300 border-b border-gray-700 pb-2">
+                    <strong class="text-accent-yellow">Username:</strong> <span id="display-username" class="float-right text-white"></span>
+                </p>
+                <p class="text-gray-300 border-b border-gray-700 pb-2">
+                    <strong class="text-accent-yellow">Days Remaining:</strong> <span id="days-left" class="float-right text-white font-bold"></span>
+                </p>
+                <p class="text-gray-300">
+                    <strong class="text-accent-yellow">Payment Status:</strong> 
+                    <span id="payment-status" class="float-right font-bold"></span>
+                </p>
+            </div>
+            
+            <a href="index.html" class="inline-block mt-8 px-8 py-3 bg-accent-yellow text-primary-dark font-bold rounded-xl hover:bg-yellow-500 transition duration-300 cta-button">
+                Back to Home
+            </a>
+        </section>
+
+        <section id="no-data-message" class="hidden text-center my-16">
+            <h2 class="text-4xl font-extrabold text-red-500">Subscription Not Found!</h2>
+            <p class="text-lg text-gray-400 mt-4">
+                We couldn't find your subscription details. Please submit the form to start a new one.
+            </p>
+            <a href="index.html" class="inline-block mt-8 px-8 py-3 bg-accent-yellow text-primary-dark font-bold rounded-xl hover:bg-yellow-500 transition duration-300 cta-button">
+                Go to Subscription Page
+            </a>
+        </section>
+
+    </main>
+
+    <footer class="main-footer">
+        <div class="container footer-content">
+            <p>&copy; 2026 let's go gym. all rights reserved. | powered by results.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Utility function to calculate status
+        function calculateStatus(sub) {
+            const ONE_DAY = 1000 * 60 * 60 * 24;
+            const startDate = new Date(sub.startDate || Date.now()); 
+            const duration = sub.duration;
+            const currentDate = new Date();
+            
+            const elapsedDays = Math.floor((currentDate - startDate) / ONE_DAY);
+            const daysLeft = duration - elapsedDays;
+            
+            return { daysLeft: Math.max(0, daysLeft) };
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const customerCode = localStorage.getItem('currentSubscriptionCode');
+            const subscriptions = JSON.parse(localStorage.getItem('gymSubscriptions')) || [];
+            
+            const sub = subscriptions.find(s => s.code === customerCode);
+
+            if (sub) {
+                const status = calculateStatus(sub);
+
+                document.getElementById('display-name').textContent = sub.name;
+                document.getElementById('display-plan').textContent = sub.plan;
+                document.getElementById('display-code').textContent = sub.code;
+                document.getElementById('display-username').textContent = sub.username;
+                
+                document.getElementById('days-left').textContent = `${status.daysLeft} days`;
+
+                const paymentElement = document.getElementById('payment-status');
+                
+                // Uses classes defined in external style.css
+                if (sub.isPaid) {
+                    paymentElement.textContent = (status.daysLeft > 0) ? 'PAID & ACTIVE' : 'PAID (EXPIRED)';
+                    paymentElement.className = 'status-box-paid'; 
+                } else {
+                    paymentElement.textContent = 'UNPAID - Access Denied';
+                    paymentElement.className = 'status-box-unpaid'; 
+                }
+                
+                document.getElementById('subscription-status').classList.remove('hidden');
+            } else {
+                document.getElementById('no-data-message').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
