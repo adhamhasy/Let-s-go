@@ -19,6 +19,7 @@
     <main class="container main-content">
         <div class="dashboard-container">
             
+            <!-- Membership Lookup -->
             <div class="status-header">
                 <h2 class="text-3xl font-extrabold text-accent-yellow">
                     Membership Lookup
@@ -27,242 +28,287 @@
             </div>
 
             <div class="search-area">
+                <!-- oninput calls the search function on every keystroke -->
                 <input type="text" id="search-code-input" placeholder="Enter Subscription Code (e.g., 87654321)" oninput="searchByCode()">
                 
                 <div id="search-result-container" class="hidden">
-                    <h3 class="text-accent-yellow">Found Member: <span id="member-name-lookup" class="text-text-light"></span></h3>
-                    
-                    <div id="search-result-details" class="mt-4">
-                        <p>Code: <strong id="member-code-lookup"></strong></p>
-                        <p>Plan: <strong id="member-plan-lookup"></strong></p>
-                        <p>Days Remaining: <strong id="member-days-left-lookup"></strong></p>
-                        <p class="mt-2">Membership Status: 
-                            <span id="member-status-lookup"></span>
-                        </p>
+                    <h3 class="text-accent-yellow">Found Member: <span id="lookup-name"></span></h3>
+                    <div class="lookup-details-grid">
+                        <p><strong>Code:</strong> <span id="lookup-code"></span></p>
+                        <p><strong>Plan:</strong> <span id="lookup-plan"></span></p>
+                        <p><strong>Days Left:</strong> <span id="lookup-days-left"></span></p>
+                        <p><strong>Paid:</strong> <span id="lookup-is-paid"></span></p>
                     </div>
-                    
-                    <div class="text-center mt-6">
-                        <button id="lookup-toggle-btn" class="toggle-btn" onclick="togglePaymentStatus()"></button>
-                    </div>
+                    <!-- Added onclick event to use the globally exposed function -->
+                    <button class="cta-button mt-4" onclick="handleTogglePaymentStatus()">
+                        <span id="toggle-button-text">Toggle Payment Status</span>
+                    </button>
                 </div>
+                <div id="search-error-message" class="hidden text-red-400 mt-2">
+                    Code not found or invalid format.
+                </div>
+            </div>
 
-                <p id="search-error" class="hidden text-danger mt-4">Code not found or invalid format.</p>
+            <hr class="my-8 border-gray-700">
+
+            <!-- All Subscriptions Table -->
+            <div class="table-header">
+                <h2 class="text-3xl font-extrabold text-white">All Subscriptions</h2>
+                <button class="cta-button danger-button" onclick="clearSubscriptions()">Clear All Subscriptions</button>
             </div>
             
-            <hr class="border-gray-700 my-8">
-
-            <div class="list-header">
-                <h2 class="text-3xl font-extrabold text-accent-yellow">
-                    All Subscriptions List
-                </h2>
-                <button id="clear-data-btn" class="clear-btn">Clear All Data</button>
-            </div>
-            
-            <div id="table-container" class="table-wrapper">
-                <table class="dashboard-table">
+            <div class="table-container">
+                <table class="subscriptions-table">
                     <thead>
                         <tr>
-                            <th>Name</th>
+                            <th>ID</th>
                             <th>Code</th>
+                            <th>Name</th>
                             <th>Plan</th>
-                            <th>Days Left</th>
                             <th>Paid Status</th>
-                            <th>Date</th>
+                            <th>Days Left</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="subscriptions-table-body">
-                        </tbody>
+                        <!-- Data will be inserted here by JavaScript -->
+                    </tbody>
                 </table>
             </div>
 
         </div>
     </main>
-    
+
     <footer class="main-footer">
         <div class="container footer-content">
-            <p>&copy; 2026 let's go gym. data stored locally.</p>
+            <p>&copy; 2026 let's go gym. all rights reserved. | powered by results.</p>
         </div>
     </footer>
+    
+    <script type="module" src="firebase-init.js"></script>
+    <script type="module">
+        import { db } from './firebase-init.js';
+        import { 
+            collection, 
+            getDocs, 
+            query, 
+            where, 
+            doc, 
+            updateDoc, 
+            deleteDoc 
+        } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-    <script>
-        // --- GLOBAL STATE FOR LOOKUP ---
-        let currentLookupIndex = -1;
+        let currentLookupDoc = null; 
+        let currentLookupDocId = null;
 
-        // --- CORE UTILITY FUNCTIONS ---
-        function getSubscriptions() {
-            return JSON.parse(localStorage.getItem('gymSubscriptions')) || [];
+        // Utility function to calculate remaining days
+        function getSubscriptionStatus(subscription) {
+            const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+            // startDate is a timestamp (number), duration is days
+            const expiryTimestamp = subscription.startDate + (subscription.duration * oneDayInMilliseconds);
+            const timeRemaining = expiryTimestamp - Date.now();
+            const daysLeft = Math.ceil(timeRemaining / oneDayInMilliseconds);
+            
+            return {
+                daysLeft: Math.max(0, daysLeft),
+                isExpired: daysLeft <= 0
+            };
         }
 
-        function saveSubscriptions(subscriptions) {
-            localStorage.setItem('gymSubscriptions', JSON.stringify(subscriptions));
-        }
-        
-        function calculateStatus(sub) {
-            const ONE_DAY = 1000 * 60 * 60 * 24;
-            const startDate = new Date(sub.startDate || Date.now()); 
-            const duration = sub.duration;
-            const currentDate = new Date();
-            
-            const elapsedDays = Math.floor((currentDate - startDate) / ONE_DAY);
-            const daysLeft = duration - elapsedDays;
-            
-            let statusText;
-            let statusClass;
-            
-            if (!sub.isPaid) {
-                statusText = "UNPAID";
-                statusClass = "status-unpaid";
-            } else if (daysLeft > 0) {
-                statusText = "ACTIVE";
-                statusClass = "status-active";
-            } else {
-                statusText = "EXPIRED";
-                statusClass = "status-expired";
-            }
-
-            return { daysLeft: Math.max(0, daysLeft), statusText, statusClass, isExpired: daysLeft <= 0 };
-        }
-
-        // --- SEARCH LOGIC (Only searches for 8-digit numerical codes) ---
-        function searchByCode() {
-            const searchCode = document.getElementById('search-code-input').value.trim();
-            const resultContainer = document.getElementById('search-result-container');
-            const errorElement = document.getElementById('search-error');
-            const subscriptions = getSubscriptions();
-
-            resultContainer.classList.add('hidden');
-            errorElement.classList.add('hidden');
-            currentLookupIndex = -1;
-
-            // Only proceed if the input is exactly 8 characters (matching the generated code length)
-            if (searchCode.length !== 8 || isNaN(searchCode)) {
-                if (searchCode.length >= 8) {
-                    errorElement.textContent = `Code must be an 8-digit number.`;
-                    errorElement.classList.remove('hidden');
-                }
-                return; 
-            }
-
-            const index = subscriptions.findIndex(sub => sub.code === searchCode);
-
-            if (index > -1) {
-                const sub = subscriptions[index];
-                currentLookupIndex = index;
-                displayLookupResult(sub, index);
-            } else {
-                errorElement.textContent = `Code "${searchCode}" not found.`;
-                errorElement.classList.remove('hidden');
-            }
-        }
-        
-        function displayLookupResult(sub, index) {
-            const status = calculateStatus(sub);
-            const resultContainer = document.getElementById('search-result-container');
-            const toggleBtn = document.getElementById('lookup-toggle-btn');
-            
-            document.getElementById('member-name-lookup').textContent = sub.name;
-            document.getElementById('member-code-lookup').textContent = sub.code;
-            document.getElementById('member-plan-lookup').textContent = sub.plan;
-            document.getElementById('member-days-left-lookup').textContent = `${status.daysLeft} days`;
-
-            const statusElement = document.getElementById('member-status-lookup');
-            statusElement.textContent = status.statusText;
-            statusElement.className = ''; 
-            statusElement.classList.add(status.statusClass);
-
-            if (sub.isPaid) {
-                toggleBtn.textContent = 'Mark as UNPAID';
-                toggleBtn.className = 'toggle-btn btn-unpay';
-            } else {
-                toggleBtn.textContent = 'Mark as PAID (Activate)';
-                toggleBtn.className = 'toggle-btn btn-pay';
-            }
-
-            resultContainer.classList.remove('hidden');
-        }
-
-
-        // --- TOGGLE LOGIC (Unified) ---
-        function togglePaymentStatus(indexToToggle) {
-            const index = (indexToToggle !== undefined) ? indexToToggle : currentLookupIndex;
-
-            if (index === -1 || index >= getSubscriptions().length) return;
-
-            const subscriptions = getSubscriptions();
-            const sub = subscriptions[index];
-            
-            sub.isPaid = !sub.isPaid;
-            
-            if (sub.isPaid && sub.daysLeft <= 0) {
-                 sub.startDate = Date.now();
-            }
-            
-            saveSubscriptions(subscriptions);
-            loadTable(); 
-            
-            if (index === currentLookupIndex) {
-                 displayLookupResult(sub, index);
-            }
-        }
-
-        // --- FULL LIST (TABLE) LOGIC ---
-        function loadTable() {
-            const storedSubscriptions = getSubscriptions();
-            const subscriptions = [...storedSubscriptions].reverse(); 
+        // --- Main Table Loader ---
+        async function loadTable() {
             const tableBody = document.getElementById('subscriptions-table-body');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            try {
+                // Firestore Query: Fetch all subscriptions
+                const q = query(collection(db, "subscriptions"));
+                const querySnapshot = await getDocs(q);
+
+                querySnapshot.forEach(docSnapshot => {
+                    const sub = docSnapshot.data();
+                    const docId = docSnapshot.id; // Use Firestore document ID
+                    const status = getSubscriptionStatus(sub);
+                    
+                    const row = tableBody.insertRow();
+                    row.insertCell().textContent = docId.substring(0, 4) + '...'; // Display truncated ID
+                    row.insertCell().textContent = sub.code;
+                    row.insertCell().textContent = sub.name;
+                    row.insertCell().textContent = sub.plan;
+                    
+                    // Paid Status Cell
+                    const paidStatusCell = row.insertCell();
+                    paidStatusCell.textContent = sub.isPaid ? 'YES' : 'NO';
+                    paidStatusCell.className = sub.isPaid ? 'text-success' : 'text-danger';
+                    
+                    // Days Left Cell
+                    const daysLeftCell = row.insertCell();
+                    daysLeftCell.textContent = status.daysLeft > 0 ? `${status.daysLeft} days` : 'EXPIRED';
+                    daysLeftCell.className = status.daysLeft <= 7 && status.daysLeft > 0 ? 'text-warning' : status.daysLeft <= 0 ? 'text-danger' : 'text-success';
+
+                    // Action Cell (Toggle Button)
+                    const actionCell = row.insertCell();
+                    const toggleButton = document.createElement('button');
+                    toggleButton.textContent = sub.isPaid ? 'Mark Unpaid' : 'Mark Paid';
+                    toggleButton.className = sub.isPaid ? 'danger-button' : 'cta-button';
+                    
+                    // Pass the Firestore ID and the current data to the toggle function
+                    toggleButton.onclick = () => togglePaymentStatus(docId, sub); 
+                    actionCell.appendChild(toggleButton);
+                });
+
+            } catch (e) {
+                console.error("Error loading table data: ", e);
+                const row = tableBody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 7;
+                cell.textContent = `Error loading data: ${e.message}`;
+                cell.className = 'text-danger';
+            }
+        }
+
+        // --- Toggle Payment Status ---
+        async function togglePaymentStatus(docId, currentData) {
             
-            tableBody.innerHTML = ''; 
+            const newIsPaid = !currentData.isPaid;
+            let newStartDate = currentData.startDate;
+
+            // If marking paid, update the startDate to now if it's currently expired/unpaid
+            if (newIsPaid && (currentData.isPaid === false || getSubscriptionStatus(currentData).isExpired)) {
+                 newStartDate = Date.now();
+            }
+
+            try {
+                const docRef = doc(db, "subscriptions", docId);
+                // Firestore Update: Update the subscription record by ID
+                await updateDoc(docRef, { 
+                    isPaid: newIsPaid,
+                    startDate: newStartDate 
+                });
+
+                // Reload the entire table to show changes
+                await loadTable();
+                
+                // If this was called from the lookup section, update that as well
+                if (currentLookupDocId === docId) {
+                    // Update the local object for the lookup display
+                    currentLookupDoc.isPaid = newIsPaid;
+                    currentLookupDoc.startDate = newStartDate;
+                    updateLookupDisplay(currentLookupDoc); 
+                }
+
+            } catch (e) {
+                console.error("Error toggling payment status: ", e);
+                // Note: Using console.error instead of alert due to constraints
+                console.error("Error updating payment status. Check console.");
+            }
+        }
+
+        // --- Search By Code ---
+        async function searchByCode() {
+            const searchInput = document.getElementById('search-code-input');
+            const searchCode = searchInput.value.trim();
             
-            if (subscriptions.length === 0) {
-                document.getElementById('table-container').innerHTML = '<div class="empty-state">No subscriptions recorded yet.</div>';
-                document.getElementById('clear-data-btn').style.display = 'none';
+            const resultContainer = document.getElementById('search-result-container');
+            const errorMessage = document.getElementById('search-error-message');
+            
+            resultContainer.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            currentLookupDoc = null; // Clear previous result
+            currentLookupDocId = null;
+
+            if (searchCode.length !== 8 || isNaN(searchCode)) {
+                if (searchCode.length > 0) errorMessage.classList.remove('hidden');
                 return;
             }
 
-            subscriptions.forEach((sub, reverseIndex) => {
-                const row = tableBody.insertRow();
-                const status = calculateStatus(sub);
+            try {
+                // Firestore Query: Filter by code
+                const q = query(collection(db, "subscriptions"), where("code", "==", searchCode));
+                const querySnapshot = await getDocs(q);
                 
-                const originalIndex = storedSubscriptions.length - 1 - reverseIndex; 
+                if (!querySnapshot.empty) {
+                    const docSnapshot = querySnapshot.docs[0];
+                    currentLookupDoc = docSnapshot.data();
+                    currentLookupDocId = docSnapshot.id;
+                    updateLookupDisplay(currentLookupDoc);
+                    resultContainer.classList.remove('hidden');
+                } else {
+                    errorMessage.classList.remove('hidden');
+                }
 
-                row.insertCell().textContent = sub.name;
-                row.insertCell().textContent = sub.code;
-                row.insertCell().textContent = sub.plan;
-                row.insertCell().textContent = `${status.daysLeft} days`;
-
-                let paidCell = row.insertCell();
-                paidCell.textContent = sub.isPaid ? 'YES' : 'NO';
-                paidCell.style.color = sub.isPaid ? 'var(--success)' : 'var(--danger)';
-
-                row.insertCell().textContent = sub.date;
-                
-                let actionCell = row.insertCell();
-                const toggleBtn = document.createElement('button');
-                toggleBtn.textContent = sub.isPaid ? 'Mark Unpaid' : 'Mark Paid';
-                toggleBtn.className = sub.isPaid ? 'toggle-btn btn-unpay' : 'toggle-btn btn-pay';
-                toggleBtn.style.fontSize = '0.75rem'; 
-                
-                toggleBtn.onclick = function() {
-                    togglePaymentStatus(originalIndex); 
-                };
-                actionCell.appendChild(toggleBtn);
-            });
-            document.getElementById('clear-data-btn').style.display = 'block';
+            } catch (e) {
+                console.error("Error searching by code: ", e);
+                errorMessage.textContent = `Search error: ${e.message}`;
+                errorMessage.classList.remove('hidden');
+            }
+        }
+        
+        // Helper function to update the lookup result area
+        function updateLookupDisplay(sub) {
+            const status = getSubscriptionStatus(sub);
+            
+            document.getElementById('lookup-name').textContent = sub.name;
+            document.getElementById('lookup-code').textContent = sub.code;
+            document.getElementById('lookup-plan').textContent = sub.plan;
+            document.getElementById('lookup-days-left').textContent = `${status.daysLeft} days`;
+            document.getElementById('lookup-is-paid').textContent = sub.isPaid ? 'YES' : 'NO';
+            document.getElementById('lookup-is-paid').className = sub.isPaid ? 'text-success' : 'text-danger';
+            
+            // Update the toggle button text
+            document.getElementById('toggle-button-text').textContent = sub.isPaid ? 'Mark Unpaid' : 'Mark Paid';
+            const toggleButton = document.querySelector('#search-result-container button');
+            toggleButton.className = sub.isPaid ? 'cta-button mt-4 danger-button' : 'cta-button mt-4';
         }
 
-        function clearSubscriptions() {
-            if (confirm("Are you sure you want to clear ALL subscription data? This cannot be undone.")) {
-                localStorage.removeItem('gymSubscriptions');
-                localStorage.removeItem('currentSubscriptionCode'); 
-                loadTable(); 
+
+        // --- Clear All Subscriptions ---
+        async function clearSubscriptions() {
+            // Note: Replacing window.confirm() with a console log due to environment constraints.
+            console.warn("ADMIN ACTION: Starting process to clear ALL subscriptions. This is irreversible."); 
+            
+            try {
+                // Fetch all documents
+                const querySnapshot = await getDocs(collection(db, "subscriptions"));
+                const deletePromises = [];
+
+                if (querySnapshot.empty) {
+                     console.log("No subscriptions found to clear.");
+                } else {
+                    querySnapshot.forEach(docSnapshot => {
+                        deletePromises.push(deleteDoc(doc(db, "subscriptions", docSnapshot.id)));
+                    });
+                    
+                    await Promise.all(deletePromises);
+                    console.log(`Successfully deleted ${deletePromises.length} subscriptions.`);
+
+                    // Clear local storage 
+                    localStorage.removeItem('currentSubscriptionCode'); 
+                    localStorage.removeItem('currentSubscriptionDocId');
+                }
+                
+                // Reload the table
+                await loadTable(); 
+
+            } catch (e) {
+                console.error("Error clearing subscriptions: ", e);
+                // Inform admin via console instead of alert
+                console.error(`ACTION FAILED: Error clearing data. Check console for details.`);
             }
         }
         
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             loadTable();
-            document.getElementById('clear-data-btn').addEventListener('click', clearSubscriptions);
+            // Expose functions globally for HTML attributes (oninput, onclick)
+            window.searchByCode = searchByCode; 
+            window.clearSubscriptions = clearSubscriptions; 
+            window.handleTogglePaymentStatus = function() { // Used by the lookup button
+                if (currentLookupDocId && currentLookupDoc) {
+                    togglePaymentStatus(currentLookupDocId, currentLookupDoc);
+                }
+            };
+            window.togglePaymentStatus = togglePaymentStatus; // Exposed for the table buttons
         });
     </script>
 </body>
