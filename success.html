@@ -27,38 +27,40 @@
                 Welcome back, <span id="display-name" class="font-bold text-white"></span>!
             </p>
 
-            <div class="text-left space-y-4 bg-gray-900 p-6 rounded-xl mb-8">
-                <p class="text-gray-300 border-b border-gray-700 pb-2">
-                    <strong class="text-accent-yellow">Subscription Plan:</strong> <span id="display-plan" class="float-right text-white"></span>
-                </p>
-                <p class="text-gray-300 border-b border-gray-700 pb-2">
-                    <strong class="text-accent-yellow">Access Code:</strong> <span id="display-code" class="float-right text-white font-mono text-xl"></span>
-                </p>
-                <p class="text-gray-300 border-b border-gray-700 pb-2">
-                    <strong class="text-accent-yellow">Username:</strong> <span id="display-username" class="float-right text-white"></span>
-                </p>
-                <p class="text-gray-300 border-b border-gray-700 pb-2">
-                    <strong class="text-accent-yellow">Days Remaining:</strong> <span id="days-left" class="float-right text-white font-bold"></span>
-                </p>
-                <p class="text-gray-300">
-                    <strong class="text-accent-yellow">Payment Status:</strong> 
-                    <span id="payment-status" class="float-right font-bold"></span>
-                </p>
+            <div class="text-left space-y-4">
+                <div class="status-detail">
+                    <span class="detail-label">Plan:</span>
+                    <span id="display-plan" class="detail-value"></span>
+                </div>
+                <div class="status-detail">
+                    <span class="detail-label">Username:</span>
+                    <span id="display-username" class="detail-value"></span>
+                </div>
+                <div class="status-detail">
+                    <span class="detail-label">Code:</span>
+                    <span id="display-code" class="detail-value"></span>
+                </div>
+                <div class="status-detail">
+                    <span class="detail-label">Days Left:</span>
+                    <span id="days-left" class="detail-value text-accent-yellow font-extrabold"></span>
+                </div>
+                <div class="status-detail">
+                    <span class="detail-label">Payment:</span>
+                    <span id="payment-status" class="detail-value status-box-unpaid">UNPAID - Access Denied</span>
+                </div>
             </div>
-            
-            <a href="index.html" class="inline-block mt-8 px-8 py-3 bg-accent-yellow text-primary-dark font-bold rounded-xl hover:bg-yellow-500 transition duration-300 cta-button">
-                Back to Home
-            </a>
+
+            <div class="mt-8">
+                <a href="index.html" class="cta-button">Back to Home</a>
+            </div>
         </section>
 
         <section id="no-data-message" class="hidden text-center my-16">
             <h2 class="text-4xl font-extrabold text-red-500">Subscription Not Found!</h2>
-            <p class="text-lg text-gray-400 mt-4">
-                We couldn't find your subscription details. Please submit the form to start a new one.
+            <p class="text-xl text-gray-400 mt-4">
+                We couldn't find your subscription details. This may happen if your browser data was cleared. Please check your code or contact support.
             </p>
-            <a href="index.html" class="inline-block mt-8 px-8 py-3 bg-accent-yellow text-primary-dark font-bold rounded-xl hover:bg-yellow-500 transition duration-300 cta-button">
-                Go to Subscription Page
-            </a>
+            <a href="index.html" class="cta-button mt-6">Go to Subscription Form</a>
         </section>
 
     </main>
@@ -69,50 +71,69 @@
         </div>
     </footer>
     
-    <script>
+    <script type="module" src="firebase-init.js"></script>
+    <script type="module">
+        import { db } from './firebase-init.js';
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
         // Utility function to calculate status
-        function calculateStatus(sub) {
-            const ONE_DAY = 1000 * 60 * 60 * 24;
-            const startDate = new Date(sub.startDate || Date.now()); 
-            const duration = sub.duration;
-            const currentDate = new Date();
+        function getSubscriptionStatus(subscription) {
+            const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+            // startDate is a timestamp (number), duration is days
+            const expiryTimestamp = subscription.startDate + (subscription.duration * oneDayInMilliseconds);
+            const timeRemaining = expiryTimestamp - Date.now();
+            const daysLeft = Math.ceil(timeRemaining / oneDayInMilliseconds);
             
-            const elapsedDays = Math.floor((currentDate - startDate) / ONE_DAY);
-            const daysLeft = duration - elapsedDays;
-            
-            return { daysLeft: Math.max(0, daysLeft) };
+            return {
+                daysLeft: Math.max(0, daysLeft),
+                isExpired: daysLeft <= 0
+            };
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const customerCode = localStorage.getItem('currentSubscriptionCode');
-            const subscriptions = JSON.parse(localStorage.getItem('gymSubscriptions')) || [];
-            
-            const sub = subscriptions.find(s => s.code === customerCode);
+        document.addEventListener('DOMContentLoaded', async () => {
+            const docId = localStorage.getItem('currentSubscriptionDocId'); // Look up by Firestore ID
+            const statusSection = document.getElementById('subscription-status');
+            const noDataSection = document.getElementById('no-data-message');
 
-            if (sub) {
-                const status = calculateStatus(sub);
+            if (!docId) {
+                noDataSection.classList.remove('hidden');
+                return; 
+            }
 
-                document.getElementById('display-name').textContent = sub.name;
-                document.getElementById('display-plan').textContent = sub.plan;
-                document.getElementById('display-code').textContent = sub.code;
-                document.getElementById('display-username').textContent = sub.username;
-                
-                document.getElementById('days-left').textContent = `${status.daysLeft} days`;
+            try {
+                // --- Firestore Query: Get the document by ID ---
+                const docRef = doc(db, "subscriptions", docId);
+                const docSnap = await getDoc(docRef);
 
-                const paymentElement = document.getElementById('payment-status');
-                
-                // Uses classes defined in external style.css
-                if (sub.isPaid) {
-                    paymentElement.textContent = (status.daysLeft > 0) ? 'PAID & ACTIVE' : 'PAID (EXPIRED)';
-                    paymentElement.className = 'status-box-paid'; 
+                if (docSnap.exists()) {
+                    const sub = docSnap.data();
+                    const status = getSubscriptionStatus(sub);
+
+                    // --- Display Data ---
+                    document.getElementById('display-name').textContent = sub.name;
+                    document.getElementById('display-plan').textContent = sub.plan;
+                    document.getElementById('display-code').textContent = sub.code;
+                    document.getElementById('display-username').textContent = sub.username;
+                    
+                    document.getElementById('days-left').textContent = `${status.daysLeft} days`;
+
+                    const paymentElement = document.getElementById('payment-status');
+                    
+                    if (sub.isPaid) {
+                        paymentElement.textContent = (status.daysLeft > 0) ? 'PAID & ACTIVE' : 'PAID (EXPIRED)';
+                        paymentElement.className = 'status-box-paid'; 
+                    } else {
+                        paymentElement.textContent = 'UNPAID - Access Denied';
+                        paymentElement.className = 'status-box-unpaid'; 
+                    }
+                    
+                    statusSection.classList.remove('hidden');
                 } else {
-                    paymentElement.textContent = 'UNPAID - Access Denied';
-                    paymentElement.className = 'status-box-unpaid'; 
+                    noDataSection.classList.remove('hidden');
                 }
-                
-                document.getElementById('subscription-status').classList.remove('hidden');
-            } else {
-                document.getElementById('no-data-message').classList.remove('hidden');
+            } catch (e) {
+                console.error("Error fetching subscription status: ", e);
+                noDataSection.classList.remove('hidden');
             }
         });
     </script>
