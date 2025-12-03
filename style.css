@@ -89,6 +89,7 @@ body {
     color: var(--accent-yellow);
     text-transform: uppercase;
     letter-spacing: 2px;
+    
 }
 
 .logo-white {
@@ -169,10 +170,12 @@ body {
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: background-color 0.3s ease;
+    background-image: url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%2Fid%2FOIP.EewpEFjqPMi13wPHeSJM6AHaEo%3Fpid%3DApi&f=1&ipt=8c328f3d2b6ddca15437bc65d1ca3daf056999964cbb885577f6f2718b95aae0&ipo=images)
 }
 
 .class-card:hover {
     background-color: var(--card-hover);
+   
 }
 
 .card-title {
@@ -455,9 +458,7 @@ body {
         font-size: 0.85rem;
     }
     
-    .join-link-mobile {
-        display: none !important; 
-    }
+    
     
     .hero-section {
         padding: 3rem 0 4rem; 
@@ -517,4 +518,30 @@ body {
     .dashboard-table th, .dashboard-table td {
         padding: 0.75rem; 
     }
+}
+.aclass-card {
+    background-color: var(--card-background);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.3s ease;
+    background-image: url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%2Fid%2FOIP.t9BurjnHz-VD-AZqCoMSSQHaEK%3Fpid%3DApi&f=1&ipt=95f6c910f38408141c23660df64e8745ff8bc709cc953110369749c001763938&ipo=images);
+}
+.bclass-card {
+    background-color: var(--card-background);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.3s ease;
+    background-image: url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%2Fid%2FOIP.xokdmfAknV8EPlN0Som39QHaFF%3Fpid%3DApi&f=1&ipt=d3322c9c169d44465fc4d6296f84cc64215c42ade8c0027e601dff443861778e&ipo=images)
+}
+.aclass-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}.bclass-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}.class-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
