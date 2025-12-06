@@ -46,7 +46,7 @@
                 </div>
                 <div class="status-detail">
                     <span class="detail-label">Payment:</span>
-                    <span id="payment-status" class="detail-value status-box-unpaid">UNPAID - Access Denied</span>
+                    <span id="payment-status" class="unpaid">UNPAID - Access Denied</span>
                 </div>
             </div>
 
@@ -71,7 +71,7 @@
         </div>
     </footer>
     
-    <script type="module" src="firebase-init.js"></script>
+    <script type="module" src="firebase-init.js" defer></script>
     <script type="module">
         import { db } from './firebase-init.js';
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
