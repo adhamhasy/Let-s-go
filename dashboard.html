@@ -19,7 +19,6 @@
     <main class="container main-content">
         <div class="dashboard-container">
             
-            <!-- Membership Lookup -->
             <div class="status-header">
                 <h2 class="text-3xl font-extrabold text-accent-yellow">
                     Membership Lookup
@@ -28,7 +27,6 @@
             </div>
 
             <div class="search-area">
-                <!-- oninput calls the search function on every keystroke -->
                 <input type="text" id="search-code-input" placeholder="Enter Subscription Code (e.g., 87654321)" oninput="searchByCode()">
                 
                 <div id="search-result-container" class="hidden">
@@ -39,7 +37,6 @@
                         <p><strong>Days Left:</strong> <span id="lookup-days-left"></span></p>
                         <p><strong>Paid:</strong> <span id="lookup-is-paid"></span></p>
                     </div>
-                    <!-- Added onclick event to use the globally exposed function -->
                     <button class="cta-button mt-4" onclick="handleTogglePaymentStatus()">
                         <span id="toggle-button-text">Toggle Payment Status</span>
                     </button>
@@ -50,8 +47,6 @@
             </div>
 
             <hr class="my-8 border-gray-700">
-
-            <!-- All Subscriptions Table -->
             <div class="table-header">
                 <h2 class="text-3xl font-extrabold text-white">All Subscriptions</h2>
                 <button class="cta-button danger-button" onclick="clearSubscriptions()">Clear All Subscriptions</button>
@@ -61,18 +56,17 @@
                 <table class="subscriptions-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Plan</th>
-                            <th>Paid Status</th>
-                            <th>Days Left</th>
-                            <th>Action</th>
+                            <th>ID  </th>
+                            <th>Code  </th>
+                            <th>Name  </th>
+                            <th>Plan  </th>
+                            <th>Paid Status  </th>
+                            <th>Days Left  </th>
+                            <th>Action  </th>
                         </tr>
                     </thead>
                     <tbody id="subscriptions-table-body">
-                        <!-- Data will be inserted here by JavaScript -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
 
@@ -85,7 +79,7 @@
         </div>
     </footer>
     
-    <script type="module" src="firebase-init.js"></script>
+    <script type="module" src="firebase-init.js" defer></script>
     <script type="module">
         import { db } from './firebase-init.js';
         import { 
@@ -150,7 +144,7 @@
                     const actionCell = row.insertCell();
                     const toggleButton = document.createElement('button');
                     toggleButton.textContent = sub.isPaid ? 'Mark Unpaid' : 'Mark Paid';
-                    toggleButton.className = sub.isPaid ? 'danger-button' : 'cta-button';
+                    toggleButton.className = sub.isPaid ? 'cta-button' : 'cta-button';
                     
                     // Pass the Firestore ID and the current data to the toggle function
                     toggleButton.onclick = () => togglePaymentStatus(docId, sub); 
