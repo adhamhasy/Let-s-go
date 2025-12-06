@@ -46,6 +46,18 @@ body {
 .hidden { display: none; }
 .opacity-0 { opacity: 0; }
 
+/* New: Keyframes for Fade-in Effect */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .cta-button {
     display: inline-block;
     background-color: var(--accent-yellow);
@@ -56,14 +68,14 @@ body {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    transition: background-color 0.3s ease, transform 0.1s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Updated transition time */
     border: none;
     cursor: pointer;
 }
 
 .cta-button:hover {
     background-color: var(--hovered);
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.02); /* Updated transform for smoother effect */
 }
 
 /* --- 2. BASE LAYOUT & HEADER --- */
@@ -112,6 +124,8 @@ body {
 .main-content {
     padding-top: 2rem;
     padding-bottom: 4rem;
+    /* Apply Fade-in animation for a smooth entry */
+    animation: fadeIn 1.0s ease-out forwards;
 }
 
 .main-footer {
@@ -289,6 +303,9 @@ body {
 .radio-option:has(input:checked) {
     border-color: var(--accent-yellow);
     background-color: #333333;
+    /* Added scale transform for smooth feedback */
+    transform: scale(1.01);
+    transition: transform 0.2s ease-out;
 }
 
 .contact-section {
@@ -364,7 +381,7 @@ body {
 
 .status-active { background-color: var(--success); color: var(--background-dark); }
 .status-expired { background-color: var(--danger); color: var(--text-light); }
-.status-unpaid { background-color: var(--warning); color: var(--background-dark); }
+.status-unpaid { background-color: var(--danger); color: var(--background-dark); }
 
 .table-wrapper {
     overflow-x: auto;
