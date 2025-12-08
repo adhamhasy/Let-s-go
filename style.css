@@ -109,6 +109,29 @@ body {
     color: var(--text-light);
 }
 
+/* Logo link & image styling */
+.logo-link { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.logo-img { height: 48px; width: auto; display: block; border-radius: 6px; }
+.visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; }
+.ctab-button { margin-left: 12px; }
+
+@media (max-width: 600px) {
+    .logo-img { height: 40px; }
+    .logo { font-size: 1.1rem; }
+}
+
+/* Brand container: keep logo, title and tagline inline */
+.brand { display: inline-flex; align-items: center; gap: 12px; }
+.brand .logoe { margin: 0; font-size: 0.95rem; color: var(--text-faded); font-weight: 600; }
+.brand .logoe-white { color: var(--accent-yellow); }
+
+/* When space is limited, allow tagline to shrink and wrap after the brand */
+@media (max-width: 800px) {
+    .header-content { gap: 8px; }
+    .brand { gap: 8px; }
+    .brand .logoe { display: none; } /* hide tagline on very small screens for space */
+}
+
 .main-nav a {
     color: var(--text-faded);
     text-decoration: none;
@@ -600,4 +623,35 @@ body {
 }
 .ihas:hover{
      color: var(--warning);
+}
+.logor{
+    opacity: 100%;
+    margin: auto 2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-yellow);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    
+}.logor-white {
+    color: var(--text-light);
+}
+.logoe{
+    opacity: 100%;
+    margin: auto 0.2rem;
+    font-size: 0.rem;
+    font-weight:700;
+    color: var(--text-light );
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    
+}.logoe-white {
+    color: var(--accent-yellow);
+}
+.logoimg{
+    width: 500px;
+    border-radius: 50%;
+    opacity: 15%;
+    margin-bottom: -23rem;
+
 }
