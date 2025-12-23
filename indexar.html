@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <script type="module" src="firebase-init.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
+
 <body class="gradient-bg">
 
     <div id="message-box" class="message-box hidden opacity-0">
@@ -16,9 +18,9 @@
 
     <header class="main-header">
         <div class="container header-content">
-            <h1 class="logo">  lets go <span class="logo-white">gym</span>  </h1><a  href="index.html" class="ctab-button">
-            en
-            </a> 
+            <h1 class="logo"> lets go <span class="logo-white">gym</span> </h1><a href="index.html" class="ctab-button">
+                en
+            </a>
         </div>
     </header>
 
@@ -60,20 +62,25 @@
             <div class="pricing-layout">
 
                 <div class="plan-options">
-                    <div class="plan-card">
-                        <h4 class="plan-title accent-yellow">12 يومًا</h4>
-                        <p class="plan-subtitle">مثالية لمرتادي الجيم العرضيين.</p>
-                        <p class="plan-price">120 جنيه مصري<span class="plan-period">/شهريًا</span></p>
-                    </div>
                     <div class="plan-card best-value-card">
-                        <div class="best-value-badge">
-                            <span>أفضل قيمة</span>
-                        </div>
+
                         <h4 class="plan-title accent-yellow">30 يومًا</h4>
                         <p class="plan-subtitle">حسّن جسمك في اشتراكنا لمدة 30 يومًا.</p>
-                        <p class="plan-price">800 جنيه مصري
-                        <span class="plan-period">/شهريًا</span></p>
+                        <p class="plan-price">1100 جنيه مصري
+                            <span class="plan-period">/شهريًا</span>
+                        </p>
                     </div>
+                    <div class="plan-card best-value-card">
+
+                        <h4 class="plan-title accent-yellow">الملاكمة</h4>
+                        <p class="plan-subtitle">مثالية لمرتادي الجيم العرضيين.</p>
+                        <p class="plan-price">800 جنيه مصري
+                            <span class="plan-period">/شهريًا</span>
+                        </p>
+                    </div>
+
+
+
                 </div>
 
                 <div class="subscription-form-container">
@@ -87,30 +94,31 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="email">عنوان البريد الإلكتروني</label>
-                            <input type="email" id="email" name="email" required placeholder="youexample.com">
+                            <label for="phone">رقم الهاتف</label>
+                            <input type="number" id="phone" name="phone" placeholder="مثال: +201234567890" required>
                         </div>
 
                         <div class="plan-selection">
                             <label class="plan-label-heading">اختر الخطة</label>
 
                             <div class="radio-option">
-                                <input type="radio" id="plan-essential" name="plan" value="30 Days Journey (1200/mo)" required>
-                                <label for="plan-essential">رحلة 30 يومًا (1200/شهر)</label>
+                                <input type="radio" id="plan-essential" name="plan" value="30 Days Journey (1100mo)"
+                                    required>
+                                <label for="plan-essential">رحلة 30 يومًا (1100شهر)</label>
                             </div>
 
                             <div class="radio-option">
-                                <input type="radio" id="plan-unlimited" name="plan" value="12 Days Journey (800/mo)" checked>
-                                <label for="plan-unlimited">رحلة 12 يومًا (800/شهر)</label>
+                                <input type="radio" id="plan-unlimited" name="plan" value="Boxing (800/mo)" checked>
+                                <label for="plan-unlimited"> الملاكمة (800/شهر)</label>
                             </div>
                         </div>
 
                         <button type="submit" class="cta-button form-submit-button">
                             إكمال الاشتراك
                         </button>
-                         <div class="ihas"> <a href="success.html" class="ihas" >
-                            لدي اشتراك
-                        </a></div>
+                        <div class="ihas"> <a href="success.html" class="ihas">
+                                لدي اشتراك
+                            </a></div>
                     </form>
                 </div>
             </div>
@@ -141,4 +149,5 @@
     <script type="module" src="script.js" defer></script>
 
 </body>
+
 </html>
