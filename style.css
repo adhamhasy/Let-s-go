@@ -300,7 +300,7 @@ body {
 }
 
 .subscription-form input[type="text"],
-.subscription-form input[type="email"] {
+.subscription-form input[type="number"] {
     padding: 0.75rem;
     border: 1px solid #333;
     border-radius: 6px;
