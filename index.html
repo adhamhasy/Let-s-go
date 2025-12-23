@@ -1,31 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>let's go gym - start your fitness journey</title>
     <link rel="stylesheet" href="style.css">
-    <script type="module" src="firebase-init.js" defer></script> 
+    <script type="module" src="firebase-init.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
+
 <body class="gradient-bg">
 
     <div id="message-box" class="message-box hidden opacity-0">
-         id="message-text"></p>
+        id="message-text"></p>
     </div>
 
     <header class="main-header">
         <div class="container header-content">
-           
-           <h1 class="logo">  let's go <span class="logo-white">gym</span>  </h1>  <a href="indexar.html" class="ctab-button"> 
-            ar 
-            </a> 
-            
-            </div><div class="container header-content"><h5 class="logoe">#champions of the  <span class="logoe-white">game</span></h5></div>
+
+            <h1 class="logo"> let's go <span class="logo-white">gym</span> </h1> <a href="indexar.html"
+                class="ctab-button">
+                ar
+            </a>
+
+        </div>
+        <div class="container header-content">
+            <h5 class="logoe">#champions of the <span class="logoe-white">game</span></h5>
+        </div>
     </header>
-    
+
     <main class="container main-content">
-        
+
         <section id="hero" class="hero-section">
             <img src="logo.png" class="logoimg">
             <h2 class="hero-title">
@@ -44,7 +50,8 @@
             <div class="classes-grid">
                 <div class="aclass-card">
                     <h4 class="card-title">Body building</h4>
-                    <p class="card-text">build muscle and power with guided weightlifting sessions and personalized programs.</p>
+                    <p class="card-text">build muscle and power with guided weightlifting sessions and personalized
+                        programs.</p>
                 </div>
                 <div class="bclass-card">
                     <h4 class="card-title">Boxing</h4>
@@ -61,64 +68,65 @@
             <h3 class="section-title text-white">Choose Your Plan</h3>
 
             <div class="pricing-layout">
-                
+
                 <div class="plan-options">
-                    <div class="plan-card">
-                        <h4 class="plan-title accent-yellow">12/Days</h4>
-                        <p class="plan-subtitle">perfect for casual gym-goers.</p>
-                        <p class="plan-price">120 Egp<span class="plan-period">/Month</span></p>
-                    </div>
                     <div class="plan-card best-value-card">
-                        <div class="best-value-badge">
-                            <span>best value</span>
-                        </div>
+
                         <h4 class="plan-title accent-yellow">30/Days</h4>
                         <p class="plan-subtitle">improve your body in our 30 days subscription.</p>
-                        <p class="plan-price">800Egp
-                        <span class="plan-period">/Month</span></p>
+                        <p class="plan-price">800Egp<span class="plan-period">/Month</span></p>
                     </div>
+
+                    <div class="plan-card best-value-card">
+                        <h4 class="plan-title accent-yellow">Boxing</h4>
+                        <p class="plan-subtitle">be the best boxer .</p>
+                        <p class="plan-price">1100Egp<span class="plan-period">/Month</span></p>
+                    </div>
+
                 </div>
 
                 <div class="subscription-form-container">
                     <h4 class="form-title">start your online subscription</h4>
-                    
+
                     <form id="subscription-form" class="subscription-form" onsubmit="handleSubscription(event)">
-                        
+
                         <div class="form-group">
                             <label for="name">full name</label>
                             <input type="text" id="name" name="name" required placeholder=" username">
                         </div>
 
                         <div class="form-group">
-                            <label for="email">email address</label>
-                            <input type="email" id="email" name="email" required placeholder="youexample.com">
+                            <label for="phone">phone number</label>
+                            <input type="number" id="phone" name="phone" placeholder="e.g., +201234567890" required>
                         </div>
 
                         <div class="plan-selection">
                             <label class="plan-label-heading">select plan</label>
-                            
+
                             <div class="radio-option">
-                                <input type="radio" id="plan-essential" name="plan" value="30 Days Journey (1200/mo)" required>
-                                <label for="plan-essential">30 Days journey (1200/mo)</label>
+                                <input type="radio" id="plan-essential" name="plan" value="30 Days Journey (1100mo)"
+                                    required>
+                                <label for="plan-essential">30 Days journey (1100mo)</label>
                             </div>
 
                             <div class="radio-option">
-                                <input type="radio" id="plan-unlimited" name="plan" value="12 Days Journey (800/mo)" checked>
-                                <label for="plan-unlimited">12 Days journey (800/mo)</label>
+                                <input type="radio" id="plan-unlimited" name="plan" value="Boxing (800/mo)" checked>
+                                <label for="plan-unlimited">Boxing (800/mo)</label>
                             </div>
                         </div>
 
                         <button type="submit" class="cta-button form-submit-button">
                             complete subscription
-                        </button>  </form>
-                       <div class="ihas"> <a href="success.html" class="ihas" >
-                         i have a subscription
+                        </button>
+                    </form>
+                    <div class="ihas"> <a href="success.html" class="ihas">
+                            i have a subscription
                         </a></div>
-                   
+
                 </div>
             </div>
         </section>
-        
+
         <section id="contact" class="contact-section">
             <h3 class="section-title accent-yellow">visit us</h3>
             <p class="contact-intro">
@@ -144,4 +152,5 @@
     <script type="module" src="script.js" defer></script>
 
 </body>
+
 </html>
